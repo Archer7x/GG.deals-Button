@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "GG.deals Button",
+  "author": "Archer",
+  "version": "1.0.0",
+  "description": "Adds a button to SteamDB and Steam Store pages to search for games on GG.deals",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{f4a0e6b1-8c3a-4f2d-9e1a-7b5c2d8f3a4e}",
+      "strict_min_version": "142.0",
+      "data_collection_permissions": {
+        "required": ["websiteContent"]
+      }
+    }
+  },
+  "action": {
+    "default_title": "GG.deals Button"
+  },
+  "permissions": ["activeTab"],
+  "host_permissions": [
+    "https://steamdb.info/*",
+    "https://store.steampowered.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://steamdb.info/app/*",
+        "https://store.steampowered.com/app/*"
+      ],
+      "js": ["content.js"],
+      "css": ["styles.css"]
+    }
+  ]
+}
