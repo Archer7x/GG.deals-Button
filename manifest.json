@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "GG.deals Button",
   "author": "Archer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Adds a button to SteamDB and Steam Store pages to search for games on GG.deals",
   "browser_specific_settings": {
     "gecko": {
@@ -12,6 +12,11 @@
         "required": ["websiteContent"]
       }
     }
+  },
+  "icons": {
+    "32": "icons/icon32.png",
+    "64": "icons/icon64.png",
+    "128": "icons/icon128.png"
   },
   "action": {
     "default_title": "GG.deals Button"
