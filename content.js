@@ -40,7 +40,7 @@ function addGGDealsButton() {
   // Klick-Event
   button.addEventListener("click", function (e) {
     e.preventDefault();
-    const ggDealsUrl = `https://gg.deals/search/?title=${encodeURIComponent(gameTitle)}`;
+    const ggDealsUrl = `https://gg.deals/game/${slugify(gameTitle)}`; // Direkt die game seite öffnen `https://gg.deals/search/?title=${encodeURIComponent(gameTitle)}`;
     window.open(ggDealsUrl, "_blank");
   });
 
