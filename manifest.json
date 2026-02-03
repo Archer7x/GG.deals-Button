@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "GG.deals Button",
   "author": "Archer",
-  "version": "1.0.1",
+  "version": "0.0.1",
   "description": "Adds a button to SteamDB and Steam Store pages to search for games on GG.deals",
   "browser_specific_settings": {
     "gecko": {
@@ -30,7 +30,8 @@
     {
       "matches": [
         "https://steamdb.info/app/*",
-        "https://store.steampowered.com/app/*"
+        "https://store.steampowered.com/app/*",
+        "https://gg.deals/game/*"
       ],
       "js": ["content.js"],
       "css": ["styles.css"]
