@@ -104,18 +104,21 @@ function createButton() {
 function placeButton(button) {
   if (isSteamStore()) {
     const container = document.querySelector(".apphub_OtherSiteInfo");
+    const communityHubBtn = Array.from(
+      container?.querySelectorAll("a") || [],
+    ).find(
+      (a) =>
+        a.textContent.toLowerCase().includes("community") &&
+        a.href.includes("steamcommunity.com"),
+    );
 
-    if (container) {
-      // Find Community Hub button and insert before it
-      const communityHubBtn = Array.from(container.querySelectorAll("a")).find(
-        (a) => a.textContent.includes("Communityhub"),
-      );
-
-      if (communityHubBtn) {
-        container.insertBefore(button, communityHubBtn);
-        communityHubBtn.before(document.createTextNode(" "));
-      } else {
-        container.appendChild(button); // Fallback
+    if (communityHubBtn) {
+      communityHubBtn.before(button);
+      communityHubBtn.before(document.createTextNode(" "));
+    } else if (container) {
+      const lastChild = container.lastChild;
+      if (lastChild) {
+        container.insertBefore(button, lastChild);
       }
     }
   } else if (isSteamDB()) {
