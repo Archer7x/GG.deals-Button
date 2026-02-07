@@ -1,16 +1,12 @@
 {
   "manifest_version": 3,
-  "name": "GG.deals Button",
+  "name": "GG.deals-Button",
   "author": "Archer",
-  "version": "1.0.2",
-  "description": "Adds a button to SteamDB and Steam Store pages to search for games on GG.deals",
+  "description": "Adds a button to SteamDB and Steam Store pages to open games on GG.deals",
+  "version": "2.0.0",
   "browser_specific_settings": {
     "gecko": {
-      "id": "{f4a0e6b1-8c3a-4f2d-9e1a-7b5c2d8f3a4e}",
-      "strict_min_version": "142.0",
-      "data_collection_permissions": {
-        "required": ["websiteContent"]
-      }
+      "id": "{f4a0e6b1-8c3a-4f2d-9e1a-7b5c2d8f3a4e}"
     }
   },
   "icons": {
@@ -18,14 +14,6 @@
     "64": "icons/icon64.png",
     "128": "icons/icon128.png"
   },
-  "action": {
-    "default_title": "GG.deals Button"
-  },
-  "permissions": ["activeTab"],
-  "host_permissions": [
-    "https://steamdb.info/*",
-    "https://store.steampowered.com/*"
-  ],
   "content_scripts": [
     {
       "matches": [
@@ -33,8 +21,22 @@
         "https://store.steampowered.com/app/*",
         "https://gg.deals/game/*"
       ],
-      "js": ["content.js"],
-      "css": ["styles.css"]
+      "js": ["content_script.js"]
     }
+  ],
+  "action": {
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "64": "icons/icon64.png"
+    },
+    "default_title": "GG.deals-Button",
+    "default_popup": "popup/pop_settings.html"
+  },
+  "options_ui": {
+    "page": "options/index.html"
+  },
+  "permissions": [
+    "storage"
   ]
 }

@@ -1,4 +1,10 @@
 {
-  "extensionId": "f4a0e6b1-8c3a-4f2d-9e1a-7b5c2d8f3a4e",
-  "url": "https://addons.mozilla.org/de/firefox/addon/gg-deals-button/"
+  "firefox": {
+    "extensionId": "f4a0e6b1-8c3a-4f2d-9e1a-7b5c2d8f3a4e",
+    "url": "https://addons.mozilla.org/firefox/addon/gg-deals-button/"
+  },
+  "chrome": {
+    "extensionId": "",
+    "url": ""
+  }
 }
