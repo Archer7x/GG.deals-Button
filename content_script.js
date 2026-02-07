@@ -1,11 +1,36 @@
 console.log(
-  "%c[GG.deals]%c GG.deals Button Addon geladen!",
+  "%c[GG.deals]%c GG.deals Button Addon loaded!",
   "color: #1e90ff; font-weight: bold;",
   "",
 );
 // API gg.deals J23MlmhqnTEgyKQZistC1oAmyWjoD4kQ
 let isERROR = false;
 let newTab = true;
+
+// Load settings from storage
+async function loadSettings() {
+  const defaults = {
+    openNewTab: true,
+    steamStore: true,
+    steamdb: true,
+    ggdeals: true,
+  };
+  const items = await browser.storage.local.get(defaults);
+  newTab = items.openNewTab;
+  return items;
+}
+
+// Check if button should be shown on current site
+function shouldShowButton(settings) {
+  if (isSteamStore()) {
+    return settings.steamStore;
+  } else if (isSteamDB()) {
+    return settings.steamdb;
+  } else if (isGGDeals()) {
+    return settings.ggdeals;
+  }
+  return false;
+}
 
 // Page Detection
 // ==============================
@@ -116,7 +141,7 @@ function placeButton(button) {
   }
 }
 
-// Clean Gamename
+// Slugify game name
 // ==============================
 function slugify(str) {
   return str
@@ -165,10 +190,36 @@ function throwError() {
   toolTip = "Couldn't find game title";
 }
 
-// Rufe createButton sofort auf oder warte auf DOMContentLoaded
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", createButton);
-} else {
-  // Seite ist bereits geladen, rufe sofort auf
-  createButton();
+// Toggle button visibility based on settings
+async function toggleButton() {
+  const settings = await loadSettings();
+  const button = document.getElementById("gg-deals-button");
+
+  if (shouldShowButton(settings)) {
+    // Create button if it doesn't exist
+    if (!button) {
+      createButton();
+    } else {
+      // Update target if only newTab changed
+      button.target = newTab ? "_blank" : "_self";
+    }
+  } else {
+    // Remove button if it should not be shown
+    button?.remove();
+  }
 }
+
+// Initialize button on page load or call immediately if already loaded
+async function initButton() {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", toggleButton);
+  } else {
+    await toggleButton();
+  }
+}
+
+// Listen for storage changes and update button
+browser.storage.onChanged.addListener(toggleButton);
+
+// Initialize
+initButton();

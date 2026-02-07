@@ -1,5 +1,4 @@
 {
-  "update_url": "https://addons.mozilla.org/firefox/addon/gg-deals-button/",
   "manifest_version": 3,
   "name": "GG.deals-Button",
   "author": "Archer",
@@ -36,5 +35,8 @@
   },
   "options_ui": {
     "page": "options/index.html"
-  }
+  },
+  "permissions": [
+    "storage"
+  ]
 }
