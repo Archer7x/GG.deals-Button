@@ -147,7 +147,7 @@ function ggTOsteamdbLink() {
     const appId = href.match(/\/app\/(\d+)/)?.[1];
     if (appId) {
       console.log(
-        `%c[GG.deals]%c https://steamdb.info/app/${appId}/`, //! reuse for API call
+        `%c[GG.deals]%c https://steamdb.info/app/${appId}/`,
         "color: #1e90ff; font-weight: bold;",
         "",
       );
@@ -156,6 +156,7 @@ function ggTOsteamdbLink() {
   }
   return null;
 }
+
 // Error Handling
 // ==============================
 function throwError() {

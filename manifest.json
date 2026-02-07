@@ -1,4 +1,5 @@
 {
+  "update_url": "https://addons.mozilla.org/firefox/addon/gg-deals-button/",
   "manifest_version": 3,
   "name": "GG.deals-Button",
   "author": "Archer",
@@ -24,6 +25,15 @@
       "js": ["content_script.js"]
     }
   ],
+  "action": {
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "64": "icons/icon64.png"
+    },
+    "default_title": "GG.deals-Button",
+    "default_popup": "popup/pop_settings.html"
+  },
   "options_ui": {
     "page": "options/index.html"
   }
