@@ -13,6 +13,7 @@ async function loadSettings() {
     openNewTab: true,
     steamStore: true,
     steamdb: true,
+    gog: true,
     ggdeals: true,
   };
   const items = await browser.storage.local.get(defaults);
@@ -26,6 +27,8 @@ function shouldShowButton(settings) {
     return settings.steamStore;
   } else if (isSteamDB()) {
     return settings.steamdb;
+  } else if (isGOG()) {
+    return settings.gog;
   } else if (isGGDeals()) {
     return settings.ggdeals;
   }
@@ -37,18 +40,21 @@ function shouldShowButton(settings) {
 const isGGDeals = () => location.hostname.includes("gg.deals");
 const isSteamStore = () => location.hostname === "store.steampowered.com";
 const isSteamDB = () => location.hostname.includes("steamdb.info");
+const isGOG = () => location.hostname.includes("gog.com");
 
 // Get Game Title
 // ==============================
 function getGameName() {
   if (isSteamStore()) {
-    return document.querySelector(".apphub_AppName").textContent;
+    return document.querySelector(".apphub_AppName").textContent.trim();
   } else if (isSteamDB()) {
-    return document.querySelector("h1").textContent;
+    return document.querySelector("h1").textContent.trim();
+  } else if (isGOG()) {
+    return document.querySelector("h1").textContent.trim();
   } else if (isGGDeals()) {
-    return document.querySelector(
-      '.breadcrumbs-list li:last-child span[itemprop="name"]',
-    ).textContent;
+    return document
+      .querySelector('.breadcrumbs-list li:last-child span[itemprop="name"]')
+      .textContent.trim();
   } else {
     throwError();
   }
@@ -65,8 +71,7 @@ function createButton() {
 
   if (!isERROR) {
     if (isGGDeals()) {
-      btnText = "SteamDB";
-      btnElement = "a";
+      btnText = "View on SteamDB";
       btnClass = "game-header-store-link badge";
       toolTip = `Open "${getGameName()}" on Steamdb`;
       gameLink = ggTOsteamdbLink();
@@ -76,6 +81,10 @@ function createButton() {
       gameLink = nameTOggLink(getGameName());
       // ==============================
     } else if (isSteamDB()) {
+      gameLink = nameTOggLink(getGameName());
+      // ==============================
+    } else if (isGOG()) {
+      btnText = "View on GG.deals";
       gameLink = nameTOggLink(getGameName());
       // ==============================
     } else {
@@ -131,6 +140,21 @@ function placeButton(button) {
       } else {
         nav.appendChild(button); // Fallback
       }
+    }
+  } else if (isGOG()) {
+    const wishlistButton = document.querySelector('[class*="wishlist-button"]');
+    if (wishlistButton) {
+      // Container um Wishlist-Button erstellen
+      const container = document.createElement("div");
+      container.style.cssText =
+        "display: flex; gap: 10px; align-items: center;";
+
+      // Original-Button in Container verschieben
+      wishlistButton.parentElement.insertBefore(container, wishlistButton);
+      container.appendChild(wishlistButton);
+      wishlistButton.style.cssText = "flex: 1 !important;";
+      // GG.deals Button hinzufügen
+      container.appendChild(button);
     }
   } else if (isGGDeals()) {
     const gameInfoHeading = document.querySelector(".game-info-heading");
@@ -193,8 +217,8 @@ function throwError() {
   toolTip = "Couldn't find game title";
 }
 
-// Toggle button visibility based on settings
-async function toggleButton() {
+// Update button state without reload
+async function updateButton() {
   const settings = await loadSettings();
   const button = document.getElementById("gg-deals-button");
 
@@ -212,16 +236,32 @@ async function toggleButton() {
   }
 }
 
-// Initialize button on page load or call immediately if already loaded
-async function initButton() {
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", toggleButton);
+// Toggle button visibility based on settings with reload
+async function toggleButton() {
+  const settings = await loadSettings();
+  const button = document.getElementById("gg-deals-button");
+  const shouldShow = shouldShowButton(settings);
+  const buttonExists = !!button;
+
+  // Only reload if button visibility changed
+  if (shouldShow !== buttonExists) {
+    location.reload();
   } else {
-    await toggleButton();
+    // Just update target if only newTab changed
+    await updateButton();
   }
 }
 
-// Listen for storage changes and update button
+// Initialize button on page load or call immediately if already loaded
+async function initButton() {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", updateButton);
+  } else {
+    await updateButton();
+  }
+}
+
+// Listen for storage changes and update button with reload if needed
 browser.storage.onChanged.addListener(toggleButton);
 
 // Initialize

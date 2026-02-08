@@ -24,9 +24,12 @@
       "matches": [
         "https://steamdb.info/app/*",
         "https://store.steampowered.com/app/*",
+        "*://gog.com/*",
+        "*://www.gog.com/*",
         "https://gg.deals/game/*"
       ],
-      "js": ["content_script.js"]
+      "js": ["content_script.js"],
+      "css": ["styles.css"]
     }
   ],
   "action": {
