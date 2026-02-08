@@ -1,12 +1,16 @@
 {
   "manifest_version": 3,
   "name": "GG.deals-Button",
+  "short_name": "GG-Button",
   "author": "Archer",
   "description": "Adds a button to SteamDB and Steam Store pages to open games on GG.deals",
   "version": "2.0.2",
   "browser_specific_settings": {
     "gecko": {
-      "id": "{f4a0e6b1-8c3a-4f2d-9e1a-7b5c2d8f3a4e}"
+      "id": "{f4a0e6b1-8c3a-4f2d-9e1a-7b5c2d8f3a4e}",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
     }
   },
   "icons": {
@@ -35,7 +39,5 @@
     "default_title": "GG.deals-Button",
     "default_popup": "popup/pop_settings.html"
   },
-  "permissions": [
-    "storage"
-  ]
+  "permissions": ["storage"]
 }
