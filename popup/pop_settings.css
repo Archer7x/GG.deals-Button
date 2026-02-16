@@ -78,7 +78,7 @@ h1 {
 }
 
 .checkbox:checked::after {
-  content: "X";
+  content: "";
   display: flex;
   align-items: center;
   justify-content: center;

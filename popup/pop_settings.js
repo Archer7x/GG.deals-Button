@@ -8,7 +8,7 @@ const ggdealsCheckbox = document.getElementById("ggdeals");
 // Load settings from storage when popup opens
 async function loadSettings() {
   const defaults = {
-    openNewTab: true,
+    openNewTab: false,
     steamStore: true,
     steamdb: true,
     gog: true,

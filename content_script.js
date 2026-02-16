@@ -10,7 +10,7 @@ let newTab = true;
 // Load settings from storage
 async function loadSettings() {
   const defaults = {
-    openNewTab: true,
+    openNewTab: false,
     steamStore: true,
     steamdb: true,
     gog: true,
@@ -177,7 +177,7 @@ function slugify(str) {
     .replace(/[\u0300-\u036f]/g, "") // remove accents
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/[^a-z0-9\s-]/g, "-") // replace special characters with dash
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
 }
