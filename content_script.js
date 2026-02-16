@@ -172,6 +172,7 @@ function placeButton(button) {
 // ==============================
 function slugify(str) {
   return str
+    .replace(/director's/gi, "directors") // Special case: remove apostrophe from DIRECTOR'S
     .replace(/:/g, "-")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "") // remove accents
