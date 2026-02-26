@@ -35,31 +35,6 @@ function shouldShowButton(settings) {
   return false;
 }
 
-// Page Detection
-// ==============================
-const isGGDeals = () => location.hostname.includes("gg.deals");
-const isSteamStore = () => location.hostname === "store.steampowered.com";
-const isSteamDB = () => location.hostname.includes("steamdb.info");
-const isGOG = () => location.hostname.includes("gog.com");
-
-// Get Game Title
-// ==============================
-function getGameName() {
-  if (isSteamStore()) {
-    return document.querySelector(".apphub_AppName").textContent.trim();
-  } else if (isSteamDB()) {
-    return document.querySelector("h1").textContent.trim();
-  } else if (isGOG()) {
-    return document.querySelector("h1").textContent.trim();
-  } else if (isGGDeals()) {
-    return document
-      .querySelector('.breadcrumbs-list li:last-child span[itemprop="name"]')
-      .textContent.trim();
-  } else {
-    throwError();
-  }
-}
-
 // Create Button
 // ==============================
 function createButton() {
@@ -168,20 +143,7 @@ function placeButton(button) {
   }
 }
 
-// Slugify game name
-// ==============================
-function slugify(str) {
-  return str
-    .replace(/director's/gi, "directors") // Special case: remove apostrophe from DIRECTOR'S CUT
-    .replace(/:/g, "-")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // remove accents
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, "-") // replace special characters with dash
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
-}
+
 
 // Get GG.deals Link on Game Title
 // ==============================
@@ -264,6 +226,37 @@ async function initButton() {
 
 // Listen for storage changes and update button with reload if needed
 browser.storage.onChanged.addListener(toggleButton);
+
+// Load and display price info
+async function initPriceDisplay() {
+  if (isERROR) return;
+
+  const gameName = getGameName();
+  let selector = null;
+
+  // Determine where to place price info based on site
+  if (isSteamStore()) {
+    selector = ".apphub_OtherSiteInfo";
+  } else if (isSteamDB()) {
+    selector = ".app-links";
+  } else if (isGOG()) {
+    selector = '[class*="game-header"]';
+  } else if (isGGDeals()) {
+    selector = ".game-info-heading";
+  }
+
+  if (selector) {
+    await displayGamePrice(gameName, selector);
+  }
+}
+
+// Initialize price display
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initPriceDisplay);
+} else {
+  initPriceDisplay();
+}
+
 
 // Initialize
 initButton();

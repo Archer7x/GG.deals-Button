@@ -27,7 +27,7 @@
         "https://store.steampowered.com/app/*",
         "https://www.gog.com/*"
       ],
-      "js": ["content_script.js"],
+      "js": ["src/utils.js", "src/api.js", "src/content_script.js"],
       "css": ["styles.css"]
     }
   ],
