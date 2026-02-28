@@ -19,9 +19,29 @@ function getSteamID() {
 
 // Get Game Title
 // ==============================
-function getGameName() {
+async function getGameName() {
   if (isSteamStore()) {
-    return document.querySelector(".apphub_AppName").textContent.trim();
+    const baseUrlMatch = window.location.href.match(
+      /^https:\/\/store\.steampowered\.com\/app\/\d+\//,
+    );
+    if (!baseUrlMatch) return null;
+    const baseUrl = baseUrlMatch[0];
+    const englishUrl = baseUrl + "?l=english";
+    try {
+      const response = await fetch(englishUrl);
+      const html = await response.text();
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      let name = doc.querySelector(".apphub_AppName")?.textContent.trim();
+      console.log(
+        "%c[GG.deals]%c Name= " + name,
+        "color: #1e90ff; font-weight: bold;",
+        "",
+      );
+      return name;
+    } catch (error) {
+      console.error("[GG.deals] Error fetching English title:", error);
+      return null;
+    }
   } else if (isSteamDB()) {
     return document.querySelector("h1").textContent.trim();
   } else if (isGOG()) {

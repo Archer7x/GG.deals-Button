@@ -12,6 +12,7 @@ yarn.lock
 .DS_Store
 Thumbs.db
 .Chrome/
+.test*
 
 # Environment
 .env

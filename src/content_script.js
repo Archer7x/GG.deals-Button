@@ -1,7 +1,6 @@
 console.log(
-  "%c[GG.deals]%c GG.deals Button Addon loaded!",
+  "%c[GG.deals]%c GG.deals Button Addon active!",
   "color: #1e90ff; font-weight: bold;",
-  "",
 );
 // API gg.deals J23MlmhqnTEgyKQZistC1oAmyWjoD4kQ
 let isERROR = false;
@@ -37,30 +36,32 @@ function shouldShowButton(settings) {
 
 // Create Button
 // ==============================
-function createButton() {
+async function createButton() {
+  const gameName = await getGameName(); // Warte auf englischen Namen
+  
   let gameLink;
   let btnText = "GG.deals";
   let btnClass = "btn";
   let btnElement = "a";
-  let toolTip = `Open "${getGameName()}" on GG.deals`;
+  let toolTip = `Open "${gameName}" on GG.deals`;
 
   if (!isERROR) {
     if (isGGDeals()) {
       btnText = "View on SteamDB";
       btnClass = "game-header-store-link badge";
-      toolTip = `Open "${getGameName()}" on Steamdb`;
+      toolTip = `Open "${gameName}" on Steamdb`;
       gameLink = ggTOsteamdbLink();
       // ==============================
     } else if (isSteamStore()) {
       btnClass = "btnv6_blue_hoverfade btn_medium";
-      gameLink = nameTOggLink(getGameName());
+      gameLink = nameTOggLink(gameName);
       // ==============================
     } else if (isSteamDB()) {
-      gameLink = nameTOggLink(getGameName());
+      gameLink = nameTOggLink(gameName);
       // ==============================
     } else if (isGOG()) {
       btnText = "View on GG.deals";
-      gameLink = nameTOggLink(getGameName());
+      gameLink = nameTOggLink(gameName);
       // ==============================
     } else {
       throwError();
@@ -81,6 +82,10 @@ function createButton() {
 
   // Place button on page
   placeButton(gameBtn);
+  console.log(
+  "%c[GG.deals]%c GG.deals Button created!",
+  "color: #1e90ff; font-weight: bold;",
+);
 }
 
 // Place Button - Site Specific
@@ -188,7 +193,7 @@ async function updateButton() {
   if (shouldShowButton(settings)) {
     // Create button if it doesn't exist
     if (!button) {
-      createButton();
+      await createButton();
     } else {
       // Update target if only newTab changed
       button.target = newTab ? "_blank" : "_self";
@@ -226,37 +231,6 @@ async function initButton() {
 
 // Listen for storage changes and update button with reload if needed
 browser.storage.onChanged.addListener(toggleButton);
-
-// Load and display price info
-async function initPriceDisplay() {
-  if (isERROR) return;
-
-  const gameName = getGameName();
-  let selector = null;
-
-  // Determine where to place price info based on site
-  if (isSteamStore()) {
-    selector = ".apphub_OtherSiteInfo";
-  } else if (isSteamDB()) {
-    selector = ".app-links";
-  } else if (isGOG()) {
-    selector = '[class*="game-header"]';
-  } else if (isGGDeals()) {
-    selector = ".game-info-heading";
-  }
-
-  if (selector) {
-    await displayGamePrice(gameName, selector);
-  }
-}
-
-// Initialize price display
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initPriceDisplay);
-} else {
-  initPriceDisplay();
-}
-
 
 // Initialize
 initButton();
