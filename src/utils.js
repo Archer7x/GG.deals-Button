@@ -58,14 +58,22 @@ async function getGameName() {
 // Slugify game name
 // ==============================
 function slugify(str) {
-  return str
-    .replace(/director's/gi, "directors") // Special case: remove apostrophe from DIRECTOR'S CUT
-    .replace(/:/g, "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // remove accents
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, "-") // replace special characters with dash
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
+  return (
+    str
+      .trim()
+      .replace(/director's/gi, "directors") // Special case: remove apostrophe from DIRECTOR'S CUT
+      .replace(/'/g, "") //! testing
+      .replace(/’/g, "") //! testing
+      //.replace(/,/g, "") //! testing
+      //.replace(/™/g, "") // Remove trademark symbol ™
+      //.replace(/®/g, "") // Remove registered trademark symbol ®
+      .replace(/\./g, "-") // Replace dots with dash
+      .replace(/:/g, "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // remove accents
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "") // replace special characters with dash
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+  );
 }

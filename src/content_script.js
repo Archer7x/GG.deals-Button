@@ -2,7 +2,7 @@ console.log(
   "%c[GG.deals]%c GG.deals Button Addon active!",
   "color: #1e90ff; font-weight: bold;",
 );
-// API gg.deals J23MlmhqnTEgyKQZistC1oAmyWjoD4kQ
+
 let isERROR = false;
 let newTab = true;
 
@@ -38,7 +38,7 @@ function shouldShowButton(settings) {
 // ==============================
 async function createButton() {
   const gameName = await getGameName(); // Warte auf englischen Namen
-  
+
   let gameLink;
   let btnText = "GG.deals";
   let btnClass = "btn";
@@ -54,14 +54,14 @@ async function createButton() {
       // ==============================
     } else if (isSteamStore()) {
       btnClass = "btnv6_blue_hoverfade btn_medium";
-      gameLink = nameTOggLink(gameName);
+      gameLink = await nameTOggLink(gameName);
       // ==============================
     } else if (isSteamDB()) {
-      gameLink = nameTOggLink(gameName);
+      gameLink = await nameTOggLink(gameName);
       // ==============================
     } else if (isGOG()) {
       btnText = "View on GG.deals";
-      gameLink = nameTOggLink(gameName);
+      gameLink = await nameTOggLink(gameName);
       // ==============================
     } else {
       throwError();
@@ -83,9 +83,9 @@ async function createButton() {
   // Place button on page
   placeButton(gameBtn);
   console.log(
-  "%c[GG.deals]%c GG.deals Button created!",
-  "color: #1e90ff; font-weight: bold;",
-);
+    "%c[GG.deals]%c GG.deals Button created!",
+    "color: #1e90ff; font-weight: bold;",
+  );
 }
 
 // Place Button - Site Specific
@@ -148,12 +148,64 @@ function placeButton(button) {
   }
 }
 
-
-
 // Get GG.deals Link on Game Title
 // ==============================
-function nameTOggLink(gameTitle) {
-  return `https://gg.deals/game/${slugify(gameTitle)}`;
+async function nameTOggLink(gameTitle) {
+  let ggURL = `https://gg.deals/game/${slugify(gameTitle)}`;
+  console.log(
+    "%c[GG.deals]%c Slugifyed= " + slugify(gameTitle),
+    "color: #1e90ff; font-weight: bold;",
+    "",
+  );
+
+  try {
+    // Sende Message an Background Script
+    const response = await browser.runtime.sendMessage({
+      action: "fetchGGDeals",
+      url: ggURL,
+      gameTitle: gameTitle,
+    });
+
+    if (response.success) {
+      if (response.has404) {
+        console.log(
+          "%c[GG.deals]%c 404 Error - Using fallback search...",
+          "color: #ff6b6b; font-weight: bold;",
+          "",
+        );
+        ggURL = response.url;
+        if (response.url) {
+          console.log(
+            "%c[GG.deals]%c URL found: " + ggURL,
+            "color: #51cf66; font-weight: bold;",
+            "",
+          );
+        }
+      } else {
+        console.log(
+          "%c[GG.deals]%c ✓ GG.deals page verified successfully",
+          "color: #51cf66; font-weight: bold;",
+          "",
+        );
+        ggURL = response.url;
+      }
+      return ggURL;
+    } else {
+      console.error(
+        "%c[GG.deals]%c Fehler: " + response.error,
+        "color: #ff6b6b; font-weight: bold;",
+        "",
+      );
+      return ggURL;
+    }
+  } catch (error) {
+    console.error(
+      "%c[GG.deals]%c Exception: " + error.message,
+      "color: #ff6b6b; font-weight: bold;",
+      "",
+    );
+    return ggURL;
+  }
 }
 
 // Get SteamDB Link on GG.deals
