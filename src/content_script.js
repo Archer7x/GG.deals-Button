@@ -39,6 +39,16 @@ function shouldShowButton(settings) {
 async function createButton() {
   const gameName = await getGameName(); // Warte auf englischen Namen
 
+  // Check if game name could be retrieved
+  if (!gameName) {
+    console.warn(
+      "%c[GG.deals]%c Could not determine game name - button creation aborted",
+      "color: #ff6b6b; font-weight: bold;",
+    );
+    throwError();
+    return; // Exit early if no game name found
+  }
+
   let gameLink;
   let btnText = "GG.deals";
   let btnClass = "btn";
@@ -122,19 +132,32 @@ function placeButton(button) {
       }
     }
   } else if (isGOG()) {
-    const wishlistButton = document.querySelector('[class*="wishlist-button"]');
-    if (wishlistButton) {
-      // Container um Wishlist-Button erstellen
-      const container = document.createElement("div");
-      container.style.cssText =
-        "display: flex; gap: 10px; align-items: center;";
+    try {
+      const wishlistButton = document.querySelector(
+        '[class*="wishlist-button"]',
+      );
+      if (wishlistButton && wishlistButton.parentElement) {
+        // Container um Wishlist-Button erstellen
+        const container = document.createElement("div");
+        container.style.cssText =
+          "display: flex; gap: 10px; align-items: center;";
 
-      // Original-Button in Container verschieben
-      wishlistButton.parentElement.insertBefore(container, wishlistButton);
-      container.appendChild(wishlistButton);
-      wishlistButton.style.cssText = "flex: 1 !important;";
-      // GG.deals Button hinzufügen
-      container.appendChild(button);
+        // Original-Button in Container verschieben
+        wishlistButton.parentElement.insertBefore(container, wishlistButton);
+        container.appendChild(wishlistButton);
+        wishlistButton.style.cssText = "flex: 1 !important;";
+        // GG.deals Button hinzufügen
+        container.appendChild(button);
+      } else {
+        // Fallback: Button direkt am Anfang des body einfügen
+        console.warn(
+          "[GG.deals] Wishlist button not found on GOG.com, using fallback placement",
+        );
+        document.body.insertBefore(button, document.body.firstChild);
+      }
+    } catch (error) {
+      console.error("[GG.deals] Error placing button on GOG.com:", error);
+      document.body.insertBefore(button, document.body.firstChild);
     }
   } else if (isGGDeals()) {
     const gameInfoHeading = document.querySelector(".game-info-heading");

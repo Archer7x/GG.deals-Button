@@ -43,13 +43,60 @@ async function getGameName() {
       return null;
     }
   } else if (isSteamDB()) {
-    return document.querySelector("h1").textContent.trim();
+    try {
+      const h1 = document.querySelector("h1");
+      if (!h1) {
+        console.warn("[GG.deals] No h1 found on SteamDB page");
+        return null;
+      }
+      return h1.textContent.trim();
+    } catch (error) {
+      console.error("[GG.deals] Error getting SteamDB title:", error);
+      return null;
+    }
   } else if (isGOG()) {
-    return document.querySelector("h1").textContent.trim();
+    try {
+      // Try multiple selectors for GOG.com
+      let name = document.querySelector("h1")?.textContent.trim();
+      
+      // Fallback selectors if h1 didn't work
+      if (!name) {
+        name = document.querySelector('[data-gameTitle]')?.getAttribute('data-gameTitle');
+      }
+      if (!name) {
+        name = document.querySelector('.productCardImg')?.getAttribute('alt');
+      }
+      if (!name) {
+        name = document.querySelector('.image')?.getAttribute('alt');
+      }
+      
+      if (!name) {
+        console.warn("[GG.deals] Could not find game title on GOG.com");
+        return null;
+      }
+      
+      console.log(
+        "%c[GG.deals]%c GOG Title= " + name,
+        "color: #1e90ff; font-weight: bold;",
+        "",
+      );
+      return name;
+    } catch (error) {
+      console.error("[GG.deals] Error getting GOG title:", error);
+      return null;
+    }
   } else if (isGGDeals()) {
-    return document
-      .querySelector('.breadcrumbs-list li:last-child span[itemprop="name"]')
-      .textContent.trim();
+    try {
+      const element = document.querySelector('.breadcrumbs-list li:last-child span[itemprop="name"]');
+      if (!element) {
+        console.warn("[GG.deals] No breadcrumb found on GG.deals");
+        return null;
+      }
+      return element.textContent.trim();
+    } catch (error) {
+      console.error("[GG.deals] Error getting GG.deals title:", error);
+      return null;
+    }
   } else {
     throwError();
   }
