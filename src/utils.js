@@ -60,7 +60,7 @@ async function getGameName() {
 function slugify(str) {
   return str
     .replace(/director's/gi, "directors") // Special case: remove apostrophe from DIRECTOR'S CUT
-    .replace(/:/g, "-")
+    .replace(/:/g, "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "") // remove accents
     .toLowerCase()
