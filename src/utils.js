@@ -108,12 +108,6 @@ function slugify(str) {
   return (
     str
       .trim()
-      .replace(/director's/gi, "directors") // Special case: remove apostrophe from DIRECTOR'S CUT
-      .replace(/'/g, "") //! testing
-      .replace(/’/g, "") //! testing
-      //.replace(/,/g, "") //! testing
-      //.replace(/™/g, "") // Remove trademark symbol ™
-      //.replace(/®/g, "") // Remove registered trademark symbol ®
       .replace(/\./g, "-") // Replace dots with dash
       .replace(/:/g, "")
       .normalize("NFD")
