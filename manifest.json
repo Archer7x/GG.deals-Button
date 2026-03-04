@@ -44,6 +44,6 @@
   "permissions": ["storage"],
   "host_permissions": ["https://gg.deals/*"],
   "background": {
-    "service_worker": "src/background.js"
+    "scripts": ["src/background.js"]
   }
 }

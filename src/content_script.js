@@ -6,6 +6,177 @@ console.log(
 let isERROR = false;
 let newTab = true;
 
+// Check if current gg.deals page is a 404 and redirect to search if needed
+async function check404OnGGDeals() {
+  if (isGGDeals()) {
+    const storage = await browser.storage.local.get([
+      "lastGameTitle",
+      "lastGameSlug",
+      "lastGameURL",
+    ]);
+
+    // Wenn wir gerade zur URL navigiert wurden (lastGameSlug gespeichert)
+    if (storage.lastGameSlug) {
+      // Prüfe ob wir auf der Suchseite sind
+      if (window.location.href.includes("/search/")) {
+        console.log(
+          "%c[GG.deals]%c On search page - extracting first result...",
+          "color: #1e90ff; font-weight: bold;",
+          "",
+        );
+
+        // Versuche den ersten Treffer vom DOM zu extrahieren - mit mehreren Fallback-Selektoren
+        const gamesList = document.getElementById("games-list");
+        console.log(
+          "%c[GG.deals]%c games-list element:",
+          "color: #1e90ff; font-weight: bold;",
+          "",
+          gamesList,
+        );
+
+        let firstGameLink = gamesList?.querySelector(".full-link");
+
+        // Fallback 1: Versuche noch andere Selektoren
+        if (!firstGameLink) {
+          console.log(
+            "%c[GG.deals]%c .full-link not found, trying .game-title...",
+            "color: #ff9500; font-weight: bold;",
+            "",
+          );
+          firstGameLink = document.querySelector(".game-title a");
+        }
+
+        // Fallback 2: Einfach erster Link in games-list
+        if (!firstGameLink && gamesList) {
+          console.log(
+            "%c[GG.deals]%c Trying first <a> in games-list...",
+            "color: #ff9500; font-weight: bold;",
+            "",
+          );
+          firstGameLink = gamesList.querySelector("a");
+        }
+
+        // Fallback 3: Erster Link auf der ganzen Seite der zu gg.deals geht
+        if (!firstGameLink) {
+          console.log(
+            "%c[GG.deals]%c Trying first gg.deals link on page...",
+            "color: #ff9500; font-weight: bold;",
+            "",
+          );
+          const allLinks = Array.from(
+            document.querySelectorAll("a[href*='/game/']"),
+          );
+          firstGameLink = allLinks[0];
+        }
+
+        if (firstGameLink) {
+          const href = firstGameLink.getAttribute("href");
+          console.log(
+            "%c[GG.deals]%c href found:",
+            "color: #1e90ff; font-weight: bold;",
+            "",
+            href,
+          );
+
+          if (href) {
+            const gameUrl = href.startsWith("http")
+              ? href
+              : `https://gg.deals${href}`;
+            console.log(
+              "%c[GG.deals]%c ✓ First search result extracted: " + gameUrl,
+              "color: #51cf66; font-weight: bold;",
+              "",
+            );
+
+            // Lösche Storage vor Navigation
+            browser.storage.local.remove([
+              "lastGameTitle",
+              "lastGameSlug",
+              "lastGameURL",
+            ]);
+
+            window.location.href = gameUrl;
+            return;
+          }
+        } else {
+          console.warn(
+            "%c[GG.deals]%c No game link found on search page",
+            "color: #ff6b6b; font-weight: bold;",
+            "",
+          );
+        }
+      }
+
+      // WICHTIG: Lösche sofort, damit nicht bei erneutem Besuch wieder versucht wird
+      browser.storage.local.remove([
+        "lastGameTitle",
+        "lastGameSlug",
+        "lastGameURL",
+      ]);
+
+      // Prüfe ob die Seite existiert (game-info-heading sollte da sein)
+      const gameInfoHeading = document.querySelector(".game-info-heading");
+
+      if (!gameInfoHeading) {
+        console.warn(
+          "%c[GG.deals]%c 404 detected on page - fetching search results...",
+          "color: #ff6b6b; font-weight: bold;",
+          "",
+        );
+
+        try {
+          // Fetche Suchseite mit gameTitle
+          const searchUrl = `https://gg.deals/search/?title=${storage.lastGameTitle.replace(/\s+/g, "+")}`;
+          const searchResponse = await fetch(searchUrl);
+          const searchHtml = await searchResponse.text();
+          const searchDoc = new DOMParser().parseFromString(
+            searchHtml,
+            "text/html",
+          );
+
+          // Extrahiere href aus games-list - nimm den ersten Treffer
+          const gamesList = searchDoc.getElementById("games-list");
+          const href = gamesList
+            ?.querySelector(".full-link")
+            ?.getAttribute("href");
+
+          if (href) {
+            const gameUrl = `https://gg.deals${href}`;
+            console.log(
+              "%c[GG.deals]%c ✓ First search result found: " + gameUrl,
+              "color: #51cf66; font-weight: bold;",
+              "",
+            );
+            window.location.href = gameUrl;
+          } else {
+            console.warn(
+              "%c[GG.deals]%c No search result found, redirecting to search page...",
+              "color: #ff6b6b; font-weight: bold;",
+              "",
+            );
+            window.location.href = searchUrl;
+          }
+        } catch (error) {
+          console.error(
+            "%c[GG.deals]%c Error fetching search results: " + error.message,
+            "color: #ff6b6b; font-weight: bold;",
+            "",
+          );
+          // Fallback zur Suchseite
+          const searchUrl = `https://gg.deals/search/?title=${storage.lastGameTitle.replace(/\s+/g, "+")}`;
+          window.location.href = searchUrl;
+        }
+      } else {
+        console.log(
+          "%c[GG.deals]%c ✓ Page loaded successfully",
+          "color: #51cf66; font-weight: bold;",
+          "",
+        );
+      }
+    }
+  }
+}
+
 // Load settings from storage
 async function loadSettings() {
   const defaults = {
@@ -176,59 +347,33 @@ function placeButton(button) {
 async function nameTOggLink(gameTitle) {
   let ggURL = `https://gg.deals/game/${slugify(gameTitle)}`;
   console.log(
-    "%c[GG.deals]%c Slugifyed= " + slugify(gameTitle),
+    "%c[GG.deals]%c Slugified= " + slugify(gameTitle),
     "color: #1e90ff; font-weight: bold;",
     "",
   );
 
-  try {
-    // Sende Message an Background Script
-    const response = await browser.runtime.sendMessage({
-      action: "fetchGGDeals",
-      url: ggURL,
-      gameTitle: gameTitle,
-    });
-
-    if (response.success) {
-      if (response.has404) {
-        console.log(
-          "%c[GG.deals]%c 404 Error - Using fallback search...",
-          "color: #ff6b6b; font-weight: bold;",
-          "",
-        );
-        ggURL = response.url;
-        if (response.url) {
-          console.log(
-            "%c[GG.deals]%c URL found: " + ggURL,
-            "color: #51cf66; font-weight: bold;",
-            "",
-          );
-        }
-      } else {
-        console.log(
-          "%c[GG.deals]%c ✓ GG.deals page verified successfully",
-          "color: #51cf66; font-weight: bold;",
-          "",
-        );
-        ggURL = response.url;
-      }
-      return ggURL;
-    } else {
-      console.error(
-        "%c[GG.deals]%c Fehler: " + response.error,
-        "color: #ff6b6b; font-weight: bold;",
+  // Speichere Spielname für 404-Detektion auf gg.deals (asynchron, nicht blockierend)
+  browser.storage.local
+    .set({
+      lastGameTitle: gameTitle,
+      lastGameSlug: slugify(gameTitle),
+      lastGameURL: ggURL,
+    })
+    .catch((error) => {
+      console.warn(
+        "%c[GG.deals]%c Storage set failed: " + error.message,
+        "color: #ff9500; font-weight: bold;",
         "",
       );
-      return ggURL;
-    }
-  } catch (error) {
-    console.error(
-      "%c[GG.deals]%c Exception: " + error.message,
-      "color: #ff6b6b; font-weight: bold;",
-      "",
-    );
-    return ggURL;
-  }
+    });
+
+  console.log(
+    "%c[GG.deals]%c Navigating to: " + ggURL,
+    "color: #51cf66; font-weight: bold;",
+    "",
+  );
+
+  return ggURL;
 }
 
 // Get SteamDB Link on GG.deals
@@ -306,6 +451,45 @@ async function initButton() {
 
 // Listen for storage changes and update button with reload if needed
 browser.storage.onChanged.addListener(toggleButton);
+
+// Check for 404 on GG.deals and redirect if necessary (non-blocking)
+// Rufe sofort auf
+check404OnGGDeals().catch((err) => {
+  console.error(
+    "%c[GG.deals]%c Error in 404 check (initial): " + err.message,
+    "color: #ff6b6b; font-weight: bold;",
+    "",
+  );
+});
+
+// Rufe auch nach DOMContentLoaded auf (falls Seite noch nicht vollständig geladen war)
+document.addEventListener("DOMContentLoaded", () => {
+  check404OnGGDeals().catch((err) => {
+    console.error(
+      "%c[GG.deals]%c Error in 404 check (DOMContentLoaded): " + err.message,
+      "color: #ff6b6b; font-weight: bold;",
+      "",
+    );
+  });
+});
+
+// Zusätzlich: regelmäßig prüfen (alle 1 Sekunde für 10 Sekunden)
+let checkAttempts = 0;
+const checkInterval = setInterval(() => {
+  checkAttempts++;
+  if (checkAttempts > 10) {
+    clearInterval(checkInterval);
+    return;
+  }
+
+  check404OnGGDeals().catch((err) => {
+    console.warn(
+      "%c[GG.deals]%c Error in 404 check (interval): " + err.message,
+      "color: #ff7700; font-weight: bold;",
+      "",
+    );
+  });
+}, 1000);
 
 // Initialize
 initButton();
