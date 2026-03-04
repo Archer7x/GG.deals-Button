@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# IDE and Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+.Chrome/
+.test*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+*.log
+*.zip
+*.crx
+
+# Build and dist
+dist/
+build/
