@@ -43,60 +43,13 @@ async function getGameName() {
       return null;
     }
   } else if (isSteamDB()) {
-    try {
-      const h1 = document.querySelector("h1");
-      if (!h1) {
-        console.warn("[GG.deals] No h1 found on SteamDB page");
-        return null;
-      }
-      return h1.textContent.trim();
-    } catch (error) {
-      console.error("[GG.deals] Error getting SteamDB title:", error);
-      return null;
-    }
+    return document.querySelector("h1").textContent.trim();
   } else if (isGOG()) {
-    try {
-      // Try multiple selectors for GOG.com
-      let name = document.querySelector("h1")?.textContent.trim();
-      
-      // Fallback selectors if h1 didn't work
-      if (!name) {
-        name = document.querySelector('[data-gameTitle]')?.getAttribute('data-gameTitle');
-      }
-      if (!name) {
-        name = document.querySelector('.productCardImg')?.getAttribute('alt');
-      }
-      if (!name) {
-        name = document.querySelector('.image')?.getAttribute('alt');
-      }
-      
-      if (!name) {
-        console.warn("[GG.deals] Could not find game title on GOG.com");
-        return null;
-      }
-      
-      console.log(
-        "%c[GG.deals]%c GOG Title= " + name,
-        "color: #1e90ff; font-weight: bold;",
-        "",
-      );
-      return name;
-    } catch (error) {
-      console.error("[GG.deals] Error getting GOG title:", error);
-      return null;
-    }
+    return document.querySelector("h1").textContent.trim();
   } else if (isGGDeals()) {
-    try {
-      const element = document.querySelector('.breadcrumbs-list li:last-child span[itemprop="name"]');
-      if (!element) {
-        console.warn("[GG.deals] No breadcrumb found on GG.deals");
-        return null;
-      }
-      return element.textContent.trim();
-    } catch (error) {
-      console.error("[GG.deals] Error getting GG.deals title:", error);
-      return null;
-    }
+    return document
+      .querySelector('.breadcrumbs-list li:last-child span[itemprop="name"]')
+      .textContent.trim();
   } else {
     throwError();
   }
@@ -105,16 +58,14 @@ async function getGameName() {
 // Slugify game name
 // ==============================
 function slugify(str) {
-  return (
-    str
-      .trim()
-      .replace(/\./g, "-") // Replace dots with dash
-      .replace(/:/g, "")
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "") // remove accents
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "") // replace special characters with dash
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-  );
+  return str
+    .trim()
+    .replace(/director's/gi, "directors") // Special case: remove apostrophe from DIRECTOR'S CUT
+    .replace(/:/g, "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // remove accents
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "-") // replace special characters with dash
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
 }

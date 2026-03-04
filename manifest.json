@@ -41,9 +41,5 @@
     "default_title": "GG.deals-Button",
     "default_popup": "popup/pop_settings.html"
   },
-  "permissions": ["storage"],
-  "host_permissions": ["https://gg.deals/*"],
-  "background": {
-    "scripts": ["src/background.js"]
-  }
+  "permissions": ["storage"]
 }
