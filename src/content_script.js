@@ -6,18 +6,73 @@ console.log(
 let isERROR = false;
 let newTab = true;
 
-// Load settings from storage
-async function loadSettings() {
-  const defaults = {
-    openNewTab: false,
-    steamStore: true,
-    steamdb: true,
-    gog: true,
-    ggdeals: true,
-  };
-  const items = await browser.storage.local.get(defaults);
-  newTab = items.openNewTab;
-  return items;
+// Fallback URL wenn 404 auf gg.deals
+const FALLBACK_URL = "https://gg.deals/";
+
+// Check if URL returns 404 via HTTP status
+// ==============================
+async function is404Page() {
+  try {
+    // Versuche nur den Headers zu abrufen (schneller)
+    const response = await fetch(window.location.href, {
+      method: "HEAD",
+      credentials: "include",
+      headers: {
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+      },
+    });
+
+    return response.status === 404;
+  } catch (error) {
+    // Fallback: Bei CORS oder anderen Fehlern versuche GET
+    try {
+      const response = await fetch(window.location.href, {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
+      });
+
+      return response.status === 404;
+    } catch (err) {
+      // Bei Fehler annehmen dass Seite existiert
+      console.log(
+        `%c[GG.deals]%c Statuscheck fehlgeschlagen: ${err.message}`,
+        "color: #1e90ff; font-weight: bold;",
+        "",
+      );
+      return false;
+    }
+  }
+}
+
+// Redirect auf Fallback URL bei 404
+// ==============================
+function redirect404() {
+  console.log(
+    "%c[GG.deals]%c ⚠️ 404 erkannt - Leite weiter zu Fallback URL",
+    "color: #ff6b6b; font-weight: bold;",
+    "",
+  );
+
+  showNotification(
+    "🔄 Spiel nicht gefunden - eine Alternative wird gesucht...",
+    "warning",
+  );
+
+  // Kurze Verzögerung damit Notification angezeigt wird
+  setTimeout(() => {
+    if (window.history.length > 1) {
+      // Zurück zur vorherigen Seite
+      window.history.back();
+    } else {
+      // Fallback zu gg.deals
+      window.location.href = FALLBACK_URL;
+    }
+  }, 500);
 }
 
 // Check if button should be shown on current site
@@ -34,11 +89,68 @@ function shouldShowButton(settings) {
   return false;
 }
 
+// Show notification to user
+// ==============================
+function showNotification(message, type = "info") {
+  const notification = document.createElement("div");
+  notification.textContent = message;
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    z-index: 10000;
+    animation: slideIn 0.3s ease-out;
+    ${type === "error" ? "background-color: #ff6b6b;" : type === "warning" ? "background-color: #ffa500;" : "background-color: #4ecdc4;"}
+  `;
+
+  document.body.appendChild(notification);
+
+  // Auto-remove after 4 seconds
+  setTimeout(() => {
+    notification.style.animation = "slideOut 0.3s ease-out";
+    setTimeout(() => notification.remove(), 300);
+  }, 4000);
+}
+
+// Add animation styles
+// ==============================
+if (!document.querySelector("#gg-deals-animations")) {
+  const style = document.createElement("style");
+  style.id = "gg-deals-animations";
+  style.textContent = `
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    @keyframes slideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 // Create Button
 // ==============================
 async function createButton() {
   const gameName = await getGameName(); // Warte auf englischen Namen
-  
+
   let gameLink;
   let btnText = "GG.deals";
   let btnClass = "btn";
@@ -75,6 +187,7 @@ async function createButton() {
   gameBtn.href = gameLink;
   gameBtn.title = toolTip;
   gameBtn.target = newTab ? "_blank" : "_self";
+
   // Add inner span for correct styling
   const span = document.createElement("span");
   span.textContent = btnText;
@@ -83,9 +196,9 @@ async function createButton() {
   // Place button on page
   placeButton(gameBtn);
   console.log(
-  "%c[GG.deals]%c GG.deals Button created!",
-  "color: #1e90ff; font-weight: bold;",
-);
+    "%c[GG.deals]%c GG.deals Button created!",
+    "color: #1e90ff; font-weight: bold;",
+  );
 }
 
 // Place Button - Site Specific
@@ -147,8 +260,6 @@ function placeButton(button) {
     document.body.insertBefore(button, document.body.firstChild);
   }
 }
-
-
 
 // Get GG.deals Link on Game Title
 // ==============================
@@ -229,8 +340,25 @@ async function initButton() {
   }
 }
 
+// Check for 404 page and redirect if needed
+// ==============================
+async function check404Redirect() {
+  if (isGGDeals() && (await is404Page())) {
+    redirect404();
+  }
+}
+
 // Listen for storage changes and update button with reload if needed
 browser.storage.onChanged.addListener(toggleButton);
 
 // Initialize
 initButton();
+
+// Check for 404 page after load
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => {
+    setTimeout(() => check404Redirect(), 500); // Kleine Verzögerung um sicherzustellen dass DOM vollständig ist
+  });
+} else {
+  setTimeout(() => check404Redirect(), 500);
+}
