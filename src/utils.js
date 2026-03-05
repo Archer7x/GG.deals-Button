@@ -2,7 +2,8 @@
 
 // Page Detection
 // ==============================
-const isGGDeals = () => location.hostname.includes("gg.deals");
+const isGGDeals = () =>
+  location.hostname === "gg.deals" && location.pathname.startsWith("/game/");
 const isSteamStore = () => location.hostname === "store.steampowered.com";
 const isSteamDB = () => location.hostname.includes("steamdb.info");
 const isGOG = () => location.hostname.includes("gog.com");
@@ -59,13 +60,13 @@ async function getGameName() {
 // ==============================
 function slugify(str) {
   return str
-    .trim()
-    .replace(/director's/gi, "directors") // Special case: remove apostrophe from DIRECTOR'S CUT
-    .replace(/:/g, "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // remove accents
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "-") // replace special characters with dash
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
+    .trim() // Remove leading and trailing whitespace
+    .toLowerCase() // Convert to lowercase
+    .replace(/\./g, "-") // Replace dots with dashes
+    .replace(/:/g, "") // Remove colons
+    .normalize("NFD") // Normalize Unicode to decomposed form
+    .replace(/[\u0300-\u036f]/g, "") // Remove accents and diacritics
+    .replace(/[^a-z0-9\s-]/g, "") // Remove all special characters except space and dash
+    .replace(/\s+/g, "-") // Replace spaces with dashes
+    .replace(/-+/g, "-"); // Replace multiple consecutive dashes with single dash
 }
