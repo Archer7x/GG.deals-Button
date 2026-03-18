@@ -64,9 +64,12 @@ function slugify(str) {
     .toLowerCase() // Convert to lowercase
     .replace(/\./g, "-") // Replace dots with dashes
     .replace(/:/g, "") // Remove colons
+    .replace(/™/g, "") // Remove trademark symbol
+    .replace(/©/g, "") // Remove copyright symbol
     .normalize("NFD") // Normalize Unicode to decomposed form
     .replace(/[\u0300-\u036f]/g, "") // Remove accents and diacritics
     .replace(/[^a-z0-9\s-]/g, "") // Remove all special characters except space and dash
     .replace(/\s+/g, "-") // Replace spaces with dashes
-    .replace(/-+/g, "-"); // Replace multiple consecutive dashes with single dash
+    .replace(/-+/g, "-") // Replace multiple consecutive dashes with single dash
+    .replace(/-+$/, ""); // Remove dash if it's the last character
 }
